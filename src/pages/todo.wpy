@@ -1,0 +1,72 @@
+<style lang="less">
+  .container {
+    .todo-logo {
+      color: #888;
+    }
+    .task-pane {
+      text-align: left;
+      width: 650rpx;
+      margin: 0 auto;
+      padding: 20rpx 30rpx;
+      border: 2rpx solid #888;
+      display: flex;
+      .task-field {
+        width: 600rpx;
+        height: 100%;
+        flex: 1;
+      }
+      .submit-btn {}
+    }
+  }
+</style>
+
+<template>
+  <view class="container">
+    {{newTask}}
+    <view class="todo-logo">TODO</view>
+    <form bindsubmit="formSubmit" @submit="submit">
+      <view class="task-pane">
+        <input class="task-field" name="newTask" placeholder="可以添加一个任务..." @confirm="submit" auto-focus/>
+        <button class="submit-btn" formType="submit">添加</button>
+      </view>
+    </form>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  export default class Todo extends wepy.page {
+    data = {
+      tasks: [],
+      new_task: '',
+    };
+    methods = {
+      submit(e) {
+        console.log('submit');
+        const newTask = e.detail.value['newTask'];
+        if (newTask !== '') {
+          const timestamp = Date.parse(new Date());
+          this.tasks.push({
+            id: timestamp,
+            content: newTask,
+            finshed: false,
+            star: false,
+          });
+          console.log(JSON.stringify(this.tasks));
+        } else {
+          wepy.showToast({
+            title: '不能为空',
+            icon: 'none',
+            duration: 800,
+          });
+        }
+      },
+      bindViewTap() {
+        console.log('button clicked');
+      },
+    };
+    onLoad() {
+      console.log('onLoad');
+    };
+  }
+</script>
