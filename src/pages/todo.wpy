@@ -11,10 +11,13 @@
       border: 2rpx solid #888;
       display: flex;
       .task-field {
-        width: 600rpx;
         height: 100%;
+        flex: 1;
       }
-      .submit-btn {}
+      .submit-btn {
+        width: 150rpx;
+        font-size: 30rpx;
+      }
     }
     .info-wrapper {
       text-align: center;
@@ -42,16 +45,20 @@
 <template>
   <view class="container">
     <view class="todo-logo">TODO</view>
-    <form class="task-form" bindsubmit="formSubmit" @submit="submit">
+    <form class="task-form" @submit="submit">
       <view class="task-pane">
         <input class="task-field" name="newTask" placeholder="可以添加一个任务..." value="{{newTask}}" auto-focus/>
         <button class="submit-btn" formType="submit">添加</button>
       </view>
     </form>
     <view class="info-wrapper">
-      <view class="info-field">剩余: 0</view>
-      <view class="info-field">完成: 0</view>
-      <view class="info-field">共计:{{tasks.length}}</view>
+      <button @tap="turnAllUnfinished">全部恢复</button>
+      <button @tap="turnAllFinished">全部完成</button>
+    </view>
+    <view class="info-wrapper">
+      <view class="info-field">剩余: {{restCount}}</view>
+      <view class="info-field">完成: {{finishedCount}}</view>
+      <view class="info-field">共计: {{totalCount}}</view>
     </view>
     <scroll-view  class="tasks-wrapper" scroll-y>
       <repeat for="{{tasks}}" key="id" index="index" item="item">
@@ -78,13 +85,41 @@
       }, ],
       newTask: '',
     };
+    computed = {
+      totalCount () {
+        return this.tasks.length || 0;
+      },
+      restCount () {
+        const restTasks = this.tasks.filter((item) => {
+          return !item.finished;
+        });
+        return restTasks.length;
+      },
+      finishedCount () {
+        const finishedTasks = this.tasks.filter((item) => {
+          return item.finished;
+        });
+        return finishedTasks.length;
+      },
+    };
     methods = {
       toggleTask(index, item) {
         const currTask = this.tasks[index];
         currTask.finished = !currTask.finished;
       },
+      turnAllUnfinished() {
+        this.tasks.forEach((item) => {
+          item.finished = false;
+        });
+      },
+      turnAllFinished() {
+        this.tasks.forEach((item) => {
+          item.finished = true;
+        });
+      },
       submit(e) {
-        const newTask = e.detail.value['newTask'];
+        console.log(e.value);
+        const newTask = e.detail.value['newTask'] ? e.detail.value['newTask'] : e.detail.value;
         if (newTask !== '') {
           const timestamp = Date.parse(new Date());
           this.tasks.push({
