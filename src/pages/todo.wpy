@@ -13,23 +13,51 @@
       .task-field {
         width: 600rpx;
         height: 100%;
-        flex: 1;
       }
       .submit-btn {}
+    }
+    .info-wrapper {
+      text-align: center;
+      color: #888;
+      font-size: 30rpx;
+      margin: 10rpx 0;
+      .info-field {
+        display: inline-block;
+        width: 250rpx;
+      }
+      
+    }
+    .task-item-wrapper {
+      margin: 5rpx 20rpx;
+      border: 2rpx solid #888;
+      padding: 20rpx 30rpx;
+
+      &.finished {
+        text-decoration: line-through;
+      }
     }
   }
 </style>
 
 <template>
   <view class="container">
-    {{newTask}}
     <view class="todo-logo">TODO</view>
-    <form bindsubmit="formSubmit" @submit="submit">
+    <form class="task-form" bindsubmit="formSubmit" @submit="submit">
       <view class="task-pane">
-        <input class="task-field" name="newTask" placeholder="可以添加一个任务..." @confirm="submit" auto-focus/>
+        <input class="task-field" name="newTask" placeholder="可以添加一个任务..." value="{{newTask}}" auto-focus/>
         <button class="submit-btn" formType="submit">添加</button>
       </view>
     </form>
+    <view class="info-wrapper">
+      <view class="info-field">剩余: 0</view>
+      <view class="info-field">完成: 0</view>
+      <view class="info-field">共计:{{tasks.length}}</view>
+    </view>
+    <scroll-view  class="tasks-wrapper" scroll-y>
+      <repeat for="{{tasks}}" key="id" index="index" item="item">
+        <view class="{{item.finished?'task-item-wrapper finished':'task-item-wrapper'}}"  @tap="toggleTask({{index}},{{item}})">{{item.content}}|{{item.finished}}</view>
+      </repeat>
+    </scroll-view>
   </view>
 </template>
 
@@ -37,22 +65,37 @@
   import wepy from 'wepy';
   export default class Todo extends wepy.page {
     data = {
-      tasks: [],
-      new_task: '',
+      tasks: [{
+        id: 1,
+        content: 'AAA',
+        finished: false,
+        star: false,
+      }, {
+        id: 2,
+        content: 'BBBB',
+        finished: false,
+        star: false,
+      }, ],
+      newTask: '',
     };
     methods = {
+      toggleTask(index, item) {
+        const currTask = this.tasks[index];
+        currTask.finished = !currTask.finished;
+      },
       submit(e) {
-        console.log('submit');
         const newTask = e.detail.value['newTask'];
         if (newTask !== '') {
           const timestamp = Date.parse(new Date());
           this.tasks.push({
             id: timestamp,
             content: newTask,
-            finshed: false,
+            finished: false,
             star: false,
           });
-          console.log(JSON.stringify(this.tasks));
+          this.setData({
+            newTask: '',
+          });
         } else {
           wepy.showToast({
             title: '不能为空',
