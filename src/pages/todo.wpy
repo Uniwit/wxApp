@@ -19,24 +19,43 @@
         font-size: 30rpx;
       }
     }
+    .actions-wrapper {
+      display: flex;
+    }
     .info-wrapper {
+      width: 750rpx;
       text-align: center;
       color: #888;
       font-size: 30rpx;
       margin: 10rpx 0;
+      display: flex;
       .info-field {
-        display: inline-block;
-        width: 250rpx;
+        flex: 1;
+        margin: 0 10rpx;
       }
       
     }
-    .task-item-wrapper {
-      margin: 5rpx 20rpx;
-      border: 2rpx solid #888;
-      padding: 20rpx 30rpx;
-
-      &.finished {
-        text-decoration: line-through;
+    .star-wrapper,.task-toggle-wrapper {
+      width: 50rpx;
+      height: 50rpx;
+      margin-right: 10rpx;
+    }
+    .star, .unstar, .finished, .unfinished {
+      width: 50rpx;
+      height: 50rpx;
+    }
+    .tasks-wrapper {
+      .task-item-wrapper {
+        margin: 5rpx 20rpx;
+        border: 2rpx solid #888;
+        padding: 20rpx 30rpx;
+        display: flex;
+        .task-content-wrapper {
+          flex: 1;
+          &.finished {
+            text-decoration: line-through;
+          }
+        }
       }
     }
   }
@@ -51,18 +70,32 @@
         <button class="submit-btn" formType="submit">添加</button>
       </view>
     </form>
-    <view class="info-wrapper">
+    <view class="actions-wrapper">
       <button @tap="turnAllUnfinished">全部恢复</button>
       <button @tap="turnAllFinished">全部完成</button>
+      <button @tap="deleteAllFinished">删除完成</button>
     </view>
     <view class="info-wrapper">
       <view class="info-field">剩余: {{restCount}}</view>
       <view class="info-field">完成: {{finishedCount}}</view>
+      <view class="info-field">星标: {{starCount}}</view>
       <view class="info-field">共计: {{totalCount}}</view>
     </view>
     <scroll-view  class="tasks-wrapper" scroll-y>
       <repeat for="{{tasks}}" key="id" index="index" item="item">
-        <view class="{{item.finished?'task-item-wrapper finished':'task-item-wrapper'}}"  @tap="toggleTask({{index}},{{item}})">{{item.content}}|{{item.finished}}</view>
+        <view class="task-item-wrapper">
+          <view class="task-toggle-wrapper" @tap="toggleTask({{index}},{{item}})">
+            <image class="unfinished" wx:if="{{!item.finished}}" src="http://wx4.sinaimg.cn/mw690/44894cbbgy1fs6d1zd7lkj205k05ka9t.jpg" />
+            <image class="finished" wx:if="{{item.finished}}"  src="http://wx3.sinaimg.cn/mw690/44894cbbgy1fs6d1uu0zlj205k05kmwx.jpg" />
+          </view> 
+          <view class="{{item.finished?'task-content-wrapper finished':'task-content-wrapper'}}">
+            {{item.content}}
+          </view>
+          <view class="star-wrapper" @tap="toggleStar({{index}},{{item}})">
+            <image class="star" wx:if="{{item.star}}" src="http://wx2.sinaimg.cn/mw690/44894cbbgy1fs6cocdkvtj205k05ka9v.jpg" />
+            <image class="unstar" wx:if="{{!item.star}}"  src="http://wx2.sinaimg.cn/mw690/44894cbbgy1fs6coh8ow3j205k05ka9u.jpg" />
+          </view>          
+        </view>
       </repeat>
     </scroll-view>
   </view>
@@ -95,6 +128,12 @@
         });
         return restTasks.length;
       },
+      starCount () {
+        const starTasks = this.tasks.filter((item) => {
+          return item.star;
+        });
+        return starTasks.length;
+      },
       finishedCount () {
         const finishedTasks = this.tasks.filter((item) => {
           return item.finished;
@@ -103,9 +142,20 @@
       },
     };
     methods = {
+      toggleStar(index, item) {
+        const currTask = this.tasks[index];
+        currTask.star = !currTask.star;
+      },
       toggleTask(index, item) {
         const currTask = this.tasks[index];
         currTask.finished = !currTask.finished;
+        const finishedTasks = this.tasks.filter((item) => {
+          return item.finished;
+        });
+        const unfinishedTasks = this.tasks.filter((item) => {
+          return !item.finished;
+        });
+        this.tasks = unfinishedTasks.concat(finishedTasks);
       },
       turnAllUnfinished() {
         this.tasks.forEach((item) => {
@@ -117,17 +167,30 @@
           item.finished = true;
         });
       },
+      deleteAllFinished() {
+        const restTasks = this.tasks.filter((item) => {
+          return !item.finished;
+        });
+        this.tasks = restTasks;
+      },
       submit(e) {
         console.log(e.value);
         const newTask = e.detail.value['newTask'] ? e.detail.value['newTask'] : e.detail.value;
         if (newTask !== '') {
           const timestamp = Date.parse(new Date());
-          this.tasks.push({
+          const finishedTasks = this.tasks.filter((item) => {
+            return item.finished;
+          });
+          const unfinishedTasks = this.tasks.filter((item) => {
+            return !item.finished;
+          });
+          unfinishedTasks.push({
             id: timestamp,
             content: newTask,
             finished: false,
             star: false,
           });
+          this.tasks = unfinishedTasks.concat(finishedTasks);
           this.setData({
             newTask: '',
           });
