@@ -31,6 +31,19 @@
         navigationBarTitleText: 'WeChat',
         navigationBarTextStyle: 'black',
       },
+      tabBar: {
+        list: [{
+          pagePath: 'pages/todo',
+          text: '任务',
+          iconPath: './asserts/todo.png',
+          selectedIconPath: './asserts/todo_active.png',
+        }, {
+          pagePath: 'pages/todo',
+          text: '星标',
+          iconPath: './asserts/star.png',
+          selectedIconPath: './asserts/star_active.png',
+        }, ],
+      },
     };
   }
 </script>
