@@ -1,8 +1,5 @@
 <style lang="less">
   .container {
-    .todo-logo {
-      color: #888;
-    }
     .task-pane {
       text-align: left;
       width: 650rpx;
@@ -63,7 +60,6 @@
 
 <template>
   <view class="container">
-    <view class="todo-logo">TODO</view>
     <form class="task-form" @submit="submit">
       <view class="task-pane">
         <input class="task-field" name="newTask" placeholder="可以添加一个任务..." value="{{newTask}}" auto-focus/>
@@ -208,6 +204,12 @@
     };
     onLoad() {
       console.log('onLoad');
+      this.tasks = wepy.getStorageSync('localTasks') || [];
+      this.$apply();
+    };
+    onHide() {
+      this.$apply();
+      wepy.setStorageSync('localTasks', this.tasks);
     };
   }
 </script>
