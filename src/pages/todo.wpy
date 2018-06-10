@@ -62,7 +62,7 @@
   <view class="container">
     <form class="task-form" @submit="submit">
       <view class="task-pane">
-        <input class="task-field" name="newTask" placeholder="可以添加一个任务..." value="{{newTask}}" auto-focus/>
+        <input class="task-field" name="newTask" placeholder="可以添加一个任务..." value="{{newTask}}" @confirm="confirmInput" auto-focus/>
         <button class="submit-btn" formType="submit">添加</button>
       </view>
     </form>
@@ -170,36 +170,8 @@
         this.tasks = restTasks;
       },
       submit(e) {
-        console.log(e.value);
         const newTask = e.detail.value['newTask'] ? e.detail.value['newTask'] : e.detail.value;
-        if (newTask !== '') {
-          const timestamp = Date.parse(new Date());
-          const finishedTasks = this.tasks.filter((item) => {
-            return item.finished;
-          });
-          const unfinishedTasks = this.tasks.filter((item) => {
-            return !item.finished;
-          });
-          unfinishedTasks.push({
-            id: timestamp,
-            content: newTask,
-            finished: false,
-            star: false,
-          });
-          this.tasks = unfinishedTasks.concat(finishedTasks);
-          this.setData({
-            newTask: '',
-          });
-        } else {
-          wepy.showToast({
-            title: '不能为空',
-            icon: 'none',
-            duration: 800,
-          });
-        }
-      },
-      bindViewTap() {
-        console.log('button clicked');
+        this.addTask(newTask);
       },
     };
     onLoad() {
@@ -208,8 +180,40 @@
       this.$apply();
     };
     onHide() {
-      this.$apply();
       wepy.setStorageSync('localTasks', this.tasks);
+      this.$apply();
     };
+    confirmInput (e) {
+      const newTask = e.detail.value;
+      this.addTask(newTask);
+    };
+    addTask (newTask) {
+      if (newTask !== '') {
+        const timestamp = Date.parse(new Date());
+        const finishedTasks = this.tasks.filter((item) => {
+          return item.finished;
+        });
+        const unfinishedTasks = this.tasks.filter((item) => {
+          return !item.finished;
+        });
+        unfinishedTasks.push({
+          id: timestamp,
+          content: newTask,
+          finished: false,
+          star: false,
+        });
+        this.tasks = unfinishedTasks.concat(finishedTasks);
+        this.setData({
+          newTask: '',
+        });
+        this.$apply();
+      } else {
+        wepy.showToast({
+          title: '不能为空',
+          icon: 'none',
+          duration: 800,
+        });
+      }
+    }
   }
 </script>
